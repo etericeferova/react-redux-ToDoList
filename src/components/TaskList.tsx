@@ -14,6 +14,7 @@ const TaskList = () => {
   const tasks = useSelector((state: AppState) => state.tasks);
   const filterStatus = useSelector((state: AppState) => state.filters.status);
 
+  const [searchText, setSearchText] = useState("");
   const [newTaskText, setNewTaskText] = useState("");
 
   const handleAddTask = () => {
@@ -40,12 +41,16 @@ const TaskList = () => {
     dispatch(changeFilterStatus(status));
   };
 
-  const filteredTasks = tasks.filter((task) => {
-    if (filterStatus === "all") return true;
-    if (filterStatus === "completed") return task.completed;
-    if (filterStatus === "active") return !task.completed;
-    return true;
-  });
+  const filteredTasks = tasks
+    .filter((task) => {
+      if (filterStatus === "all") return true;
+      if (filterStatus === "completed") return task.completed;
+      if (filterStatus === "active") return !task.completed;
+      return true;
+    })
+    .filter((task) =>
+      task.text.toLowerCase().includes(searchText.toLowerCase())
+    );
 
   return (
     <div>
@@ -54,16 +59,25 @@ const TaskList = () => {
           type="text"
           value={newTaskText}
           onChange={(e) => setNewTaskText(e.target.value)}
-          placeholder="Введите новую задачу"
+          placeholder="Enter a new task"
         />
-        <button onClick={handleAddTask}>Добавить задачу</button>
+        <button onClick={handleAddTask}>Add Task</button>
       </div>
 
       <div>
-        <button onClick={() => handleChangeFilter("all")}>Все</button>
-        <button onClick={() => handleChangeFilter("active")}>Активные</button>
+        <input
+          type="text"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          placeholder="Search"
+        />
+      </div>
+
+      <div>
+        <button onClick={() => handleChangeFilter("all")}>All</button>
+        <button onClick={() => handleChangeFilter("active")}>Active</button>
         <button onClick={() => handleChangeFilter("completed")}>
-          Завершенные
+          Completed
         </button>
       </div>
 
@@ -72,9 +86,9 @@ const TaskList = () => {
           <li key={task.id}>
             <span>{task.text}</span>
             <button onClick={() => handleToggleStatus(task.id)}>
-              {task.completed ? "Активировать" : "Завершить"}
+              {task.completed ? "Activate" : "Complete"}
             </button>
-            <button onClick={() => handleDeleteTask(task.id)}>Удалить</button>
+            <button onClick={() => handleDeleteTask(task.id)}>Delete</button>
           </li>
         ))}
       </ul>
