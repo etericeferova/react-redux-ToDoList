@@ -7,6 +7,7 @@ import {
   toggleStatus,
   changeFilterStatus,
   Task,
+  editTask,
 } from "../redux/store";
 
 const TaskList = () => {
@@ -14,8 +15,10 @@ const TaskList = () => {
   const tasks = useSelector((state: AppState) => state.tasks);
   const filterStatus = useSelector((state: AppState) => state.filters.status);
 
-  const [searchText, setSearchText] = useState("");
   const [newTaskText, setNewTaskText] = useState("");
+  const [searchText, setSearchText] = useState("");
+  const [isEditing, setIsEditing] = useState<number | null>(null);
+  const [editedTaskText, setEditedTaskText] = useState("");
 
   const handleAddTask = () => {
     if (newTaskText.trim()) {
@@ -52,6 +55,24 @@ const TaskList = () => {
       task.text.toLowerCase().includes(searchText.toLowerCase())
     );
 
+  const handleEditTask = (id: number, text: string) => {
+    setIsEditing(id);
+    setEditedTaskText(text);
+  };
+
+  const handleSaveEditTask = (id: number) => {
+    if (editedTaskText.trim()) {
+      dispatch(editTask({ id, text: editedTaskText }));
+      setIsEditing(null);
+      setEditedTaskText("");
+    }
+  };
+
+  const handleCancelEditTask = () => {
+    setIsEditing(null);
+    setEditedTaskText("");
+  };
+
   return (
     <div>
       <div>
@@ -59,7 +80,7 @@ const TaskList = () => {
           type="text"
           value={newTaskText}
           onChange={(e) => setNewTaskText(e.target.value)}
-          placeholder="Enter a new task"
+          placeholder="Enter new task"
         />
         <button onClick={handleAddTask}>Add Task</button>
       </div>
@@ -69,7 +90,7 @@ const TaskList = () => {
           type="text"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          placeholder="Search"
+          placeholder="Search Task"
         />
       </div>
 
@@ -84,11 +105,32 @@ const TaskList = () => {
       <ul>
         {filteredTasks.map((task) => (
           <li key={task.id}>
-            <span>{task.text}</span>
-            <button onClick={() => handleToggleStatus(task.id)}>
-              {task.completed ? "Activate" : "Complete"}
-            </button>
-            <button onClick={() => handleDeleteTask(task.id)}>Delete</button>
+            {isEditing === task.id ? (
+              <div>
+                <input
+                  type="text"
+                  value={editedTaskText}
+                  onChange={(e) => setEditedTaskText(e.target.value)}
+                />
+                <button onClick={() => handleSaveEditTask(task.id)}>
+                  Save
+                </button>
+                <button onClick={handleCancelEditTask}>Cancel</button>
+              </div>
+            ) : (
+              <div>
+                <span>{task.text}</span>
+                <button onClick={() => handleToggleStatus(task.id)}>
+                  {task.completed ? "Activate" : "Complete"}
+                </button>
+                <button onClick={() => handleDeleteTask(task.id)}>
+                  Delete
+                </button>
+                <button onClick={() => handleEditTask(task.id, task.text)}>
+                  Edit
+                </button>
+              </div>
+            )}
           </li>
         ))}
       </ul>

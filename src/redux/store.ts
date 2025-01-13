@@ -38,6 +38,9 @@ export const toggleStatus = createAction<number>("tasks/toggleStatus");
 export const changeFilterStatus = createAction<StatusFilterType>(
   "tasks/changeFilterStatus"
 );
+export const editTask = createAction<{ id: number; text: string }>(
+  "tasks/editTask"
+);
 
 const rootReducer = createReducer(initialState, (builder) => {
   builder
@@ -58,7 +61,16 @@ const rootReducer = createReducer(initialState, (builder) => {
       if (task) {
         task.completed = !task.completed;
       }
-    });
+    })
+    .addCase(
+      editTask,
+      (state, action: PayloadAction<{ id: number; text: string }>) => {
+        const task = state.tasks.find((task) => task.id === action.payload.id);
+        if (task) {
+          task.text = action.payload.text;
+        }
+      }
+    );
 });
 
 export const store = configureStore({
